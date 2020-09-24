@@ -7,7 +7,7 @@ class Class
 {
 private:
     PyObject* pyClass;
-    std::multimap<const char*, Function> loadedMethods;
+    std::multimap<std::string, Function> loadedMethods;
 
 protected:
     Class() = delete;

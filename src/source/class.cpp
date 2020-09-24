@@ -6,7 +6,7 @@
 
 Class::Class(const char* moduleName, const char* className, Function::Arguments&& args)
 {
-    loadedMethods = std::multimap<const char*, Function>();
+    loadedMethods = std::multimap<std::string, Function>();
     PyObject* _class = Interpreter::init()->loadClass(moduleName, className);
 
     if (_class != nullptr)
@@ -21,15 +21,15 @@ Class::Class(const char* moduleName, const char* className, Function::Arguments&
 ReturnType Class::callStaticMethod(const char* moduleName, const char* className, const char* methodName, Function::Arguments& args)
 {
     // Storages all static methods from all classes.
-    static std::multimap<const char*, Function> loadedStaticMethods = std::multimap<const char*, Function>();
+    static std::multimap<std::string, Function> loadedStaticMethods = std::multimap<std::string, Function>();
 
 
     std::string strMethodString(methodName);
-    auto elem = loadedStaticMethods.find(strMethodString.c_str());
+    auto elem = loadedStaticMethods.find(strMethodString);
     if (elem == loadedStaticMethods.end())
     {
         PyObject* _className = Interpreter::init()->loadClass(moduleName, className);
-        auto func = loadedStaticMethods.insert(std::pair<const char*, Function>(strMethodString.c_str(), Function(_className, methodName)));
+        auto func = loadedStaticMethods.insert(std::pair<std::string, Function>(strMethodString, Function(_className, methodName)));
 
         if (func != loadedStaticMethods.end())
             return func->second.call(args);
@@ -44,10 +44,10 @@ ReturnType Class::callStaticMethod(const char* moduleName, const char* className
 ReturnType Class::callMethod(const char* methodName, Function::Arguments& args)
 {
     std::string stringMethod(methodName);
-    auto elem = loadedMethods.find(stringMethod.c_str());
+    auto elem = loadedMethods.find(stringMethod);
     if (elem == loadedMethods.end())
     {
-        auto func = loadedMethods.insert(std::pair<const char*, Function>(stringMethod.c_str(), Function(pyClass, methodName)));
+        auto func = loadedMethods.insert(std::pair<std::string, Function>(stringMethod, Function(pyClass, methodName)));
 
         if (func != loadedMethods.end())
             return func->second.call(args);
