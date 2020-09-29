@@ -39,5 +39,7 @@ public:
     void deleteObject(PyObject* object);
 
 
+    void raise(const char* pythonExceptionName = "");
+
     ~Interpreter();
 };

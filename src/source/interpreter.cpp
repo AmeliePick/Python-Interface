@@ -1,6 +1,8 @@
 #include "../include/interpreter.h"
 #include "../include/logger.h"
+#include "../include/exceptions.h"
 #include <frameobject.h>
+#include <string>
 
 
 
@@ -27,7 +29,7 @@ PyObject* Interpreter::initModule(const char* moduleName)
 {
     PyObject* module = PyUnicode_FromString(moduleName);
     PyObject* moduleHandle = PyImport_Import(module);
-    
+
     modules.push_back(moduleHandle);
     Py_CLEAR(module);
     
@@ -119,6 +121,29 @@ void Interpreter::deleteObject(PyObject* object)
             modules.erase(obj);
         }
     }
+}
+
+
+
+void Interpreter::raise(const char* pythonExceptionName)
+{
+    std::string exceptionName(pythonExceptionName);
+
+    if (exceptionName == "")
+    {
+        PyObject *ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+
+        exceptionName = pvalue->ob_type->tp_name;
+
+        Py_CLEAR(ptype);
+        Py_CLEAR(pvalue);
+        Py_CLEAR(ptraceback);
+    }
+    
+    if (exceptionName == "BaseException") throw BaseException();
+    else if (exceptionName == "Exception") throw Exception();
+    else if (exceptionName == "ConnectionError") throw ConnectionError();
 }
 
 
