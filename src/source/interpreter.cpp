@@ -85,6 +85,18 @@ PyObject* Interpreter::loadFunction(PyObject* moduleHandle, const char* function
 
 
 
+PyObject* Interpreter::callObject(PyObject* callable_object, PyObject* args)
+{
+    PyObject* finalObject = PyObject_CallObject(callable_object, args);
+
+    if (finalObject != nullptr && find(objects.begin(), objects.end(), finalObject) == objects.end())
+        objects.push_back(finalObject);
+
+    return finalObject;
+}
+
+
+
 void Interpreter::Python_traceback_toFile()
 {
     PyObject *ptype, *pvalue, *ptraceback;

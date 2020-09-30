@@ -33,6 +33,8 @@ public:
 
     PyObject* loadFunction(PyObject* moduleHandle, const char* functionName);
 
+    PyObject* callObject(PyObject* callable_object, PyObject* args);
+
 
     void Python_traceback_toFile();
 
