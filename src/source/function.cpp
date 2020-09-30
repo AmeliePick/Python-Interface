@@ -162,7 +162,7 @@ Function::Function(const char* moduleName, const char* functionName)
 ReturnType Function::call(Arguments& args)
 {
     if(pyFunc)
-        return ReturnType(PyObject_CallObject(pyFunc, args.get()));
+        return ReturnType(Interpreter::init()->callObject(pyFunc, args.get()));
 }
 
 

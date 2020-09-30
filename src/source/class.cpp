@@ -11,11 +11,11 @@ Class::Class(const char* moduleName, const char* className, Function::Arguments&
 
     if (_class != nullptr)
     {
-        pyClass = PyObject_CallObject(_class, args.get());
+        pyClass = Interpreter::init()->callObject(_class, args.get());
         Py_CLEAR(_class);
-    }   
+    }
 }
- 
+
 
 
 ReturnType Class::callStaticMethod(const char* moduleName, const char* className, const char* methodName, Function::Arguments& args)
