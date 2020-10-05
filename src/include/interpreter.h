@@ -3,6 +3,28 @@
 #include <vector>
 
 
+namespace runtime_errors
+{
+    class ModuleNotImported
+    {
+
+    };
+
+
+    class FunctionNotLoaded
+    {
+
+    };
+
+
+    class ClassNotLoaded
+    {
+
+    };
+}
+
+
+
 class Interpreter
 {
 private:

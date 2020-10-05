@@ -30,11 +30,15 @@ PyObject* Interpreter::initModule(const char* moduleName)
     PyObject* module = PyUnicode_FromString(moduleName);
     PyObject* moduleHandle = PyImport_Import(module);
 
+    Python_traceback_toFile();
+
+    if (moduleHandle == nullptr)
+        throw runtime_errors::ModuleNotImported();
+
     modules.push_back(moduleHandle);
     Py_CLEAR(module);
     
-    Python_traceback_toFile();
-
+    
     return moduleHandle;
 }
 
@@ -54,11 +58,15 @@ PyObject* Interpreter::loadClass(PyObject* moduleHandle, const char* className)
     PyObject* dict = PyModule_GetDict(moduleHandle);
     PyObject* python_class = PyDict_GetItemString(dict, className);
 
+    Python_traceback_toFile();
+
+    if (python_class == nullptr)
+        throw runtime_errors::ClassNotLoaded();
+
     objects.push_back(python_class);
     Py_CLEAR(dict);
 
-    Python_traceback_toFile();
-
+    
     return python_class;
 }
 
@@ -76,9 +84,14 @@ PyObject* Interpreter::loadFunction(PyObject* moduleHandle, const char* function
     if (moduleHandle == nullptr) return nullptr;
 
     PyObject* function = PyObject_GetAttrString(moduleHandle, functionName);
-    objects.push_back(function);
 
     Python_traceback_toFile();
+
+    if (function == nullptr)
+        throw runtime_errors::FunctionNotLoaded();
+
+    objects.push_back(function);
+
 
     return function;
 }
@@ -110,6 +123,8 @@ void Interpreter::Python_traceback_toFile()
         this->logger->writeLog(PyUnicode_AsUTF8(PyObject_Str(pvalue)));
         this->logger->writeLog("\n");
     }
+
+    PyErr_Restore(ptype, pvalue, ptraceback);
 }
 
 
