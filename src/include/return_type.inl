@@ -1,8 +1,9 @@
 #include "types_conversion.h"
+#include "function.h"
 
 
 template<typename keyType, typename valueType>
-inline std::multimap<keyType, valueType> ReturnType::ToDict()
+inline std::multimap<keyType, valueType> ReturnType::ToMultimap()
 {
     PyObject* keys = PyDict_Keys(value);
     PyObject* values = PyDict_Values(value);
@@ -32,4 +33,23 @@ inline std::multimap<keyType, valueType> ReturnType::ToDict()
 
 
     return dict;
+}
+
+
+
+template<typename valueType>
+inline std::vector<valueType> ReturnType::ToVector()
+{
+    std::vector<valueType> result;
+    void* valueMemory = nullptr;
+
+    for (int i = 0; i < PyList_Size(value); ++i)
+    {
+        ToType<valueType>(PyList_GetItem(value, i), &valueMemory);
+        result.push_back((valueType)valueMemory);
+
+        valueMemory = nullptr;
+    }
+
+    return result;
 }

@@ -29,12 +29,16 @@ public:
 
     double ToDouble();
 
-    const char* ToString();
+    char* ToString();
 
     PyObject ToPyObject();
 
     template<typename keyType, typename valueType>
-    std::multimap<keyType, valueType> ToDict();
+    std::multimap<keyType, valueType> ToMultimap();
+
+    template<typename valueType>
+    std::vector<valueType> ToVector();
+
 
     
     

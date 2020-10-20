@@ -48,7 +48,7 @@ double ReturnType::ToDouble()
 
 
 
-const char* ReturnType::ToString()
+char* ReturnType::ToString()
 {
     return PyUnicode_AsUTF8(value);
 }
