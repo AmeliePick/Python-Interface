@@ -36,8 +36,6 @@ private:
     std::vector<PyObject*> modules;
     std::vector<PyObject*> objects;
 
-    Interpreter(const char* workDir);
-
 public:
     // -- Interpreter initialization --
     static Interpreter* init();

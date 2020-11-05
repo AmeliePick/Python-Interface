@@ -2,16 +2,43 @@
 #include "../include/logger.h"
 #include "../include/exceptions.h"
 #include <frameobject.h>
+#include <shlwapi.h>
+#include <Windows.h>
 #include <string>
-
 
 
 Interpreter::Interpreter()
 {
-
     this->logger = Logger::create();
 
+
+    // Fuck everyone who came up this shit with strings
+
+    const size_t cSize = 2048;
+    wchar_t* wcFileName = new wchar_t[cSize];
+    char* fileName = (char*)malloc(cSize);
+
+    GetModuleFileName(NULL, fileName, 2048);
+
+    std::string currentDir = std::string(fileName).substr(0, std::string(fileName).find_last_of("\\/") + 1);
+
+    std::string pyDir = currentDir + "python\\";
+    mbstowcs(wcFileName, pyDir.c_str(), cSize);
+    Py_SetPythonHome(wcFileName);
+
+
+    std::string pyLib = currentDir + "python\\Lib\\;";
+
+    mbstowcs(wcFileName, pyLib.c_str(), cSize);
+    Py_SetPath(wcFileName);
+
+    
+
     Py_Initialize();
+
+
+    delete[] wcFileName;
+    free(fileName);
 }
 
 
