@@ -28,7 +28,7 @@ namespace runtime_errors
 class Interpreter
 {
 private:
-    Interpreter();
+    Interpreter(std::wstring& PYTHONHOME);
     Interpreter(const Interpreter &);
 
     class Logger* logger;
@@ -38,7 +38,7 @@ private:
 
 public:
     // -- Interpreter initialization --
-    static Interpreter* init();
+    static Interpreter* init(std::wstring PYTHONHOME = L"");
 
 
     // -- Get the handle of python module --

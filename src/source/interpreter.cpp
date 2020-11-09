@@ -4,48 +4,39 @@
 #include <frameobject.h>
 #include <shlwapi.h>
 #include <Windows.h>
-#include <string>
 
 
-Interpreter::Interpreter()
+Interpreter::Interpreter(std::wstring& PYTHONHOME)
 {
+    /*
+     * PYTHONHOME is the path to python directory where are language runtime and language libraries.
+     * By the default, this path gets from system enviroment variable(PATH or PYTHONPATH).
+     *
+     * If the application or library is using its own version of python you need specify the desired path
+     * and put runtime dll to the folder with executable file.
+     *
+     *
+     * applicationFolder/
+     *     python/
+     *     application.exe
+     *     pythonVersion.dll
+
+     * In this case you must indicate PYTHONHOME as L"python" and it will be use your python version.
+    */
+
+
     this->logger = Logger::create();
 
-
-    // Fuck everyone who came up this shit with strings
-
-    const size_t cSize = 2048;
-    wchar_t* wcFileName = new wchar_t[cSize];
-    char* fileName = (char*)malloc(cSize);
-
-    GetModuleFileName(NULL, fileName, 2048);
-
-    std::string currentDir = std::string(fileName).substr(0, std::string(fileName).find_last_of("\\/") + 1);
-
-    std::string pyDir = currentDir + "python\\";
-    mbstowcs(wcFileName, pyDir.c_str(), cSize);
-    Py_SetPythonHome(wcFileName);
-
-
-    std::string pyLib = currentDir + "python\\Lib\\;";
-
-    mbstowcs(wcFileName, pyLib.c_str(), cSize);
-    Py_SetPath(wcFileName);
-
+    if (PYTHONHOME != L"") Py_SetPythonHome(_wcsdup(PYTHONHOME.data()));
     
-
     Py_Initialize();
-
-
-    delete[] wcFileName;
-    free(fileName);
 }
 
 
 
-Interpreter* Interpreter::init()
+Interpreter* Interpreter::init(std::wstring PYTHONHOME)
 {
-    static Interpreter* instance = new Interpreter();
+    static Interpreter* instance = new Interpreter(PYTHONHOME);
     return instance;
 
 }
@@ -129,6 +120,8 @@ PyObject* Interpreter::callObject(PyObject* callable_object, PyObject* args)
 {
     PyObject* finalObject = PyObject_CallObject(callable_object, args);
 
+    Python_traceback_toFile();
+
     if (finalObject != nullptr && find(objects.begin(), objects.end(), finalObject) == objects.end())
         objects.push_back(finalObject);
 
@@ -145,10 +138,11 @@ void Interpreter::Python_traceback_toFile()
     if (pvalue && pvalue && ptraceback)
     {
         PyTracebackObject tb = *(PyTracebackObject*)ptraceback;
+        //this->logger->writeLog(PyUnicode_AsUTF8(PyObject_Str((PyObject*)tb.tb_frame->f_back->f_code)));
         this->logger->writeLog(PyUnicode_AsUTF8(PyObject_Str((PyObject*)tb.tb_frame->f_code)));
         this->logger->writeLog(" ");
         this->logger->writeLog(PyUnicode_AsUTF8(PyObject_Str(pvalue)));
-        this->logger->writeLog("\n");
+        this->logger->writeLog("\n");    
     }
 
     PyErr_Restore(ptype, pvalue, ptraceback);
@@ -212,15 +206,16 @@ Interpreter::~Interpreter()
 
 
     // Manualy delete objects instead Py_Finalize.
-    for (int i = objects.size() - 1; i >= 0; --i)
+    for (size_t i = objects.size() - 1; i >= 0; --i)
     {
         Py_CLEAR(objects[i]);
     }
-    for (int i = modules.size() - 1; i >= 0; --i)
+    for (size_t i = modules.size() - 1; i >= 0; --i)
     {
         Py_CLEAR(modules[i]);
     }
 
+    delete logger;
     
     // Here should be Py_Finalize calling.
 }
