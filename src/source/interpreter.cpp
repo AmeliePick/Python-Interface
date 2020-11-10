@@ -2,8 +2,6 @@
 #include "../include/logger.h"
 #include "../include/exceptions.h"
 #include <frameobject.h>
-#include <shlwapi.h>
-#include <Windows.h>
 
 
 Interpreter::Interpreter(std::wstring& PYTHONHOME)
@@ -135,14 +133,24 @@ void Interpreter::Python_traceback_toFile()
     PyObject *ptype, *pvalue, *ptraceback;
     PyErr_Fetch(&ptype, &pvalue, &ptraceback);
 
-    if (pvalue && pvalue && ptraceback)
+    if (ptype && pvalue && ptraceback)
     {
         PyTracebackObject tb = *(PyTracebackObject*)ptraceback;
-        //this->logger->writeLog(PyUnicode_AsUTF8(PyObject_Str((PyObject*)tb.tb_frame->f_back->f_code)));
-        this->logger->writeLog(PyUnicode_AsUTF8(PyObject_Str((PyObject*)tb.tb_frame->f_code)));
-        this->logger->writeLog(" ");
-        this->logger->writeLog(PyUnicode_AsUTF8(PyObject_Str(pvalue)));
-        this->logger->writeLog("\n");    
+
+        std::string stackTrace = "======================================================================\n";
+        PyTracebackObject* stackFrame = &tb;
+        while(stackFrame)
+        {
+            stackTrace += PyUnicode_AsUTF8(PyObject_Str((PyObject*)stackFrame->tb_frame->f_code));
+            stackTrace += '\n';
+            stackFrame = stackFrame->tb_next;
+        }
+        
+        stackTrace += pvalue->ob_type->tp_name;
+        stackTrace += ": ";
+        stackTrace += PyUnicode_AsUTF8(PyObject_Str(pvalue));
+        stackTrace += '\n';
+        this->logger->writeLog(stackTrace.c_str());
     }
 
     PyErr_Restore(ptype, pvalue, ptraceback);
